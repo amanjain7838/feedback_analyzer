@@ -4,6 +4,7 @@ An AI-powered internal tool for analyzing customer feedback from multiple source
 
 ## Features
 
+- **Ask Questions** (NEW!): Natural language interface to query feedback - ask "What are users complaining about this week?" and get instant AI-powered answers
 - **Dashboard**: Overview of feedback metrics with sentiment trends and distribution charts
 - **Explore Feedback**: Filter and browse feedback by time range, sentiment, and category
 - **AI Analysis**: Generate intelligent summaries using a mock AI service that identifies key themes, concerns, and recommendations
@@ -44,7 +45,7 @@ An AI-powered internal tool for analyzing customer feedback from multiple source
 
 ### Prerequisites
 - Docker and Docker Compose installed
-- Ports 3000, 5433, and 8000 available
+- Ports 3000, 5432, and 8000 available
 
 ### Quick Start
 
@@ -66,7 +67,7 @@ docker-compose up --build
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000 (check http://localhost:8000/docs for API documentation)
-- **Database**: localhost:5433 (credentials: admin/password)
+- **Database**: localhost:5432 (credentials: admin/password)
 
 ### Stop Services
 
@@ -80,6 +81,23 @@ docker-compose down -v
 ```
 
 ## Usage
+
+### Ask Questions Tab (NEW!)
+Natural language query interface:
+- Type questions in plain English like "What are users complaining about this week?"
+- Or click example questions to get started
+- Get instant AI-powered answers with:
+  - Detailed analysis of the query
+  - Top issues, themes, or sentiment changes
+  - Related feedback items for context
+  - Smart filtering based on your question
+
+Example questions:
+- "What are users complaining about this week?"
+- "Did sentiment change after the last release?"
+- "What do users love about the app?"
+- "Show me recent bug reports"
+- "What are the main performance issues?"
 
 ### Dashboard Tab
 View high-level metrics including:
@@ -111,6 +129,7 @@ Generate intelligent summaries:
 ## API Endpoints
 
 - `GET /feedback` - List feedback with filters
+- `POST /query` - Natural language question answering (NEW!)
 - `POST /analyze/summary` - Generate AI summary
 - `GET /analyze/trends` - Get sentiment trends
 - `GET /stats/overview` - Get overview statistics
@@ -121,9 +140,11 @@ Full API documentation available at http://localhost:8000/docs when running.
 ## Mock AI Service
 
 The AI service (`ai_service.py`) simulates an ML model for demonstration purposes:
+- **Natural language understanding**: Parses user questions to extract intent, time ranges, sentiment filters, and keywords
 - **Sentiment analysis**: Keyword-based classification
 - **Summary generation**: Pattern-based analysis of sentiment, categories, and trends
 - **Topic extraction**: Common topic detection
+- **Conversational answers**: Generates natural language responses tailored to the question type
 
 In a production environment, this would integrate with real ML models (OpenAI, Claude, Hugging Face, etc.).
 

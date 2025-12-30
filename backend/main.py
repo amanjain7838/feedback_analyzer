@@ -273,3 +273,68 @@ def get_categories():
     conn.close()
     
     return {"categories": categories}
+
+class QueryRequest(BaseModel):
+    question: str
+
+class QueryResponse(BaseModel):
+    answer: str
+    relevant_feedback: List[Feedback]
+    query_type: str
+    filters_applied: dict
+
+@app.post("/query", response_model=QueryResponse)
+def natural_language_query(request: QueryRequest):
+    """Answer natural language questions about feedback"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Use AI service to parse the question and determine filters
+    query_analysis = ai_service.parse_natural_query(request.question)
+    
+    # Build SQL query based on parsed intent
+    query = "SELECT * FROM feedback WHERE 1=1"
+    params = []
+    
+    # Apply time filters
+    if query_analysis.get('days'):
+        query += " AND created_at >= %s"
+        params.append(datetime.now() - timedelta(days=query_analysis['days']))
+    
+    # Apply sentiment filters
+    if query_analysis.get('sentiment'):
+        query += " AND sentiment = %s"
+        params.append(query_analysis['sentiment'])
+    
+    # Apply category filters
+    if query_analysis.get('category'):
+        query += " AND category = %s"
+        params.append(query_analysis['category'])
+    
+    # Apply keyword search
+    if query_analysis.get('keywords'):
+        keyword_conditions = " OR ".join(["content ILIKE %s"] * len(query_analysis['keywords']))
+        query += f" AND ({keyword_conditions})"
+        params.extend([f"%{kw}%" for kw in query_analysis['keywords']])
+    
+    query += " ORDER BY created_at DESC LIMIT 50"
+    
+    cursor.execute(query, params)
+    feedback_items = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    # Generate natural language answer
+    answer = ai_service.answer_question(
+        request.question, 
+        feedback_items, 
+        query_analysis
+    )
+    
+    return QueryResponse(
+        answer=answer,
+        relevant_feedback=feedback_items[:10],  # Return top 10 most relevant
+        query_type=query_analysis.get('type', 'general'),
+        filters_applied=query_analysis
+    )

@@ -4,11 +4,12 @@ import './App.css';
 import Dashboard from './components/Dashboard';
 import FeedbackList from './components/FeedbackList';
 import AnalysisSummary from './components/AnalysisSummary';
+import QueryInterface from './components/QueryInterface';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('query');
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,6 +37,12 @@ function App() {
 
       <nav className="nav">
         <button 
+          className={activeTab === 'query' ? 'active' : ''}
+          onClick={() => setActiveTab('query')}
+        >
+          Ask Questions
+        </button>
+        <button 
           className={activeTab === 'dashboard' ? 'active' : ''}
           onClick={() => setActiveTab('dashboard')}
         >
@@ -60,6 +67,7 @@ function App() {
           <div className="loading">Loading...</div>
         ) : (
           <>
+            {activeTab === 'query' && <QueryInterface />}
             {activeTab === 'dashboard' && <Dashboard overview={overview} />}
             {activeTab === 'explore' && <FeedbackList />}
             {activeTab === 'analysis' && <AnalysisSummary />}
