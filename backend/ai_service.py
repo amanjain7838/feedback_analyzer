@@ -1,4 +1,5 @@
 import random
+import string
 from typing import List, Dict
 from collections import Counter
 
@@ -165,7 +166,7 @@ class AIService:
                 analysis['days'] = 7
         
         # Detect sentiment
-        if any(word in question_lower for word in ['complain', 'complaint', 'complaints', 'negative', 'issue', 'problem', 'bad']):
+        if any(word in question_lower for word in ['complain', 'complaint', 'complaints', 'complaining', 'negative', 'issue', 'problem', 'bad']):
             analysis['sentiment'] = 'negative'
             analysis['type'] = 'complaints'
         elif any(word in question_lower for word in ['positive', 'good', 'love', 'praise', 'happy', 'like']):
@@ -195,12 +196,17 @@ class AIService:
         # Extract potential search keywords (remove common words)
         stop_words = {'what', 'are', 'is', 'the', 'about', 'users', 'user', 'people', 
                       'saying', 'this', 'last', 'week', 'month', 'day', 'after', 'before',
-                      'did', 'sentiment', 'change', 'complaining', 'can', 'i', 'quickly',
+                      'did', 'sentiment', 'change', 'can', 'i', 'quickly',
                       'explore', 'feedback', 'without', 'reading', 'hundreds', 'entries'}
         
         words = question_lower.split()
-        keywords = [w for w in words if w not in stop_words and len(w) > 3]
-        analysis['keywords'] = keywords[:3]  # Limit to top 3
+        # Remove punctuation from words and filter
+        keywords = [w.strip(string.punctuation) for w in words if w.strip(string.punctuation) not in stop_words and len(w.strip(string.punctuation)) > 3]
+        # Only use keywords if no clear sentiment was detected
+        if analysis['sentiment']:
+            analysis['keywords'] = []  # Skip keywords when sentiment is already clear
+        else:
+            analysis['keywords'] = keywords[:3]  # Limit to top 3
         
         return analysis
     

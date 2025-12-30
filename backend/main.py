@@ -311,19 +311,21 @@ def natural_language_query(request: QueryRequest):
         query += " AND category = %s"
         params.append(query_analysis['category'])
     
-    # Apply keyword search
-    if query_analysis.get('keywords'):
+    # Apply keyword search only if no sentiment/category filters (to avoid overly specific matches)
+    if query_analysis.get('keywords') and not query_analysis.get('sentiment') and not query_analysis.get('category'):
         keyword_conditions = " OR ".join(["content ILIKE %s"] * len(query_analysis['keywords']))
         query += f" AND ({keyword_conditions})"
         params.extend([f"%{kw}%" for kw in query_analysis['keywords']])
     
     query += " ORDER BY created_at DESC LIMIT 50"
-    
+    print("Executing query:", query, "with params:", params)
     cursor.execute(query, params)
     feedback_items = cursor.fetchall()
     
     cursor.close()
     conn.close()
+
+    # print("Retrieved feedback items:", feedback_items)
     
     # Generate natural language answer
     answer = ai_service.answer_question(
